@@ -30,35 +30,28 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
 
     logging.info('Warframe Scraper triggered.')
 
-    # 1. Fetch the raw data from Warframe
-    url = "https://content.warframe.com/dynamic/worldState.php"
+   # 1. Fetch the data from the community API (Bypasses Cloudflare IP blocks)
+    # Note: Using '/pc' for PC data. You can change it to '/ps4', '/xb1', or '/swi' if needed.
+    url = "https://api.warframestat.us/pc/alerts"
     
-    # custom User-Agent so Warframe doesn't block the request as a bot
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
     
     try:
-        # Pass the headers into the request
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status() # Check for HTTP errors
-    
-    # try:
-    #     response = requests.get(url, timeout=10)
-    #     response.raise_for_status() # Check for HTTP errors
-        raw_data = response.json()
         
-        # 2. Extract just the Alerts (to keep the database clean)
-        # The raw JSON has many keys; we only want the 'Alerts' array for now.
-        alerts = raw_data.get('Alerts', [])
+        # 2. Parse the Alerts
+        # Because we used the /alerts endpoint, the response IS the alerts array!
+        alerts = response.json()
         
         logging.info(f"Found {len(alerts)} active alerts.")
 
         # 3. Write to Firestore
-        if firebase_admin._apps: # Ensure Firebase actually loaded
+        if firebase_admin._apps: 
             db = firestore.client()
             
-            # We overwrite the 'latest' document with the current active alerts
             doc_ref = db.collection('worldState').document('latest')
             doc_ref.set({
                 'alerts': alerts,
