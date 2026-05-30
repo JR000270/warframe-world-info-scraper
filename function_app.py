@@ -33,9 +33,19 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
     # 1. Fetch the raw data from Warframe
     url = "https://content.warframe.com/dynamic/worldState.php"
     
+    # custom User-Agent so Warframe doesn't block the request as a bot
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    
     try:
-        response = requests.get(url, timeout=10)
+        # Pass the headers into the request
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status() # Check for HTTP errors
+    
+    # try:
+    #     response = requests.get(url, timeout=10)
+    #     response.raise_for_status() # Check for HTTP errors
         raw_data = response.json()
         
         # 2. Extract just the Alerts (to keep the database clean)
