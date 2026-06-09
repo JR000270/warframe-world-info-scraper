@@ -31,30 +31,35 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
     logging.info('Warframe Scraper triggered.')
 
    # 1. Fetch the data from the community API (Bypasses Cloudflare IP blocks)
-    # Note: Using '/pc' for PC data. You can change it to '/ps4', '/xb1', or '/swi' if needed.
-    url = "https://api.warframestat.us/pc/alerts"
+    # Note: Using '/pc
+    url = "https://api.warframestat.us/pc"
     
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
     
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10) #send request with a timeout
         response.raise_for_status() # Check for HTTP errors
         
-        # 2. Parse the Alerts
-        # Because we used the /alerts endpoint, the response IS the alerts array!
-        alerts = response.json()
+        # 2. Parse the info into a json object
+        world_state = response.json()
         
-        logging.info(f"Found {len(alerts)} active alerts.")
+        # 3. Pluck out only the arrays we care about right now
+        # The .get() method is safe: if 'alerts' is missing, it returns an empty array []
+        alerts = world_state.get('alerts', []) #basically asking for info in using a key -> 'alerts'
+        fissures = world_state.get('fissures', [])
 
-        # 3. Write to Firestore
+        logging.info(f"Found {len(alerts)} active alerts and {len(fissures)} active fissures.")
+
+        # 4. Write to Firestore
         if firebase_admin._apps: 
             db = firestore.client()
             
             doc_ref = db.collection('worldState').document('latest')
             doc_ref.set({
                 'alerts': alerts,
+                'fissures': fissures,
                 'last_updated': firestore.SERVER_TIMESTAMP
             })
             
