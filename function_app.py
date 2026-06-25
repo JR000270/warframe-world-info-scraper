@@ -31,9 +31,9 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
     logging.info('Warframe Scraper triggered.')
 
    # 1. Fetch the data from the community API (Bypasses Cloudflare IP blocks)
-    # Note: Using '/pc
+    # Note: Using '/pc to get all the data and sift it from there as needed
     url = "https://api.warframestat.us/pc"
-    
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
@@ -49,7 +49,9 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
         # The .get() method is safe: if 'alerts' is missing, it returns an empty array []
         alerts = world_state.get('alerts', []) #basically asking for info in using a key -> 'alerts'
         fissures = world_state.get('fissures', [])
+        arbitration = world_state.get('arbitration', {})
 
+        #logging.info(f"Found {len(alerts)} active alerts.")
         logging.info(f"Found {len(alerts)} active alerts and {len(fissures)} active fissures.")
 
         # 4. Write to Firestore
@@ -60,6 +62,7 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
             doc_ref.set({
                 'alerts': alerts,
                 'fissures': fissures,
+                'arbitration': arbitration,
                 'last_updated': firestore.SERVER_TIMESTAMP
             })
             
