@@ -51,6 +51,15 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
         fissures = world_state.get('fissures', [])
         arbitration = world_state.get('arbitration', {})
 
+        #baro ki'teer
+        void_trader = world_state.get('voidTrader', {})
+
+        #world cycles
+        cetus = world_state.get('cetusCycle', {})
+        vallis = world_state.get('vallisCycle', {})
+        cambion = world_state.get('cambionCycle', {})
+        duviri = world_state.get('duviriCycle', {})
+
         #logging.info(f"Found {len(alerts)} active alerts.")
         logging.info(f"Found {len(alerts)} active alerts and {len(fissures)} active fissures.")
 
@@ -63,6 +72,11 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
                 'alerts': alerts,
                 'fissures': fissures,
                 'arbitration': arbitration,
+                'voidTrader': void_trader,
+                'cetusCycle': cetus,
+                'vallisCycle': vallis,
+                'cambionCycle': cambion,
+                'duviriCycle': duviri,
                 'last_updated': firestore.SERVER_TIMESTAMP
             })
             
