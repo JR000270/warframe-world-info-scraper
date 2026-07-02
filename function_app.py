@@ -49,7 +49,7 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
         # The .get() method is safe: if 'alerts' is missing, it returns an empty array []
         alerts = world_state.get('alerts', []) #basically asking for info in using a key -> 'alerts'
         fissures = world_state.get('fissures', [])
-        arbitration = world_state.get('arbitration', {})
+        # arbitration = world_state.get('arbitration', {}) #gets junk data every time
 
         #baro ki'teer
         void_trader = world_state.get('voidTrader', {})
@@ -59,6 +59,44 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
         vallis = world_state.get('vallisCycle', {})
         cambion = world_state.get('cambionCycle', {})
         duviri = world_state.get('duviriCycle', {})
+
+        #syndicate missions
+        raw_syndicate_missions = world_state.get('syndicateMissions', [])
+        target_syndicates = [
+            "Ostrons", 
+            "SolarisUnited", 
+            "Duviri", 
+            "Hollvania", 
+            "EntratiSyndicate", 
+            "Cavia", 
+            "Zariman"
+        ]
+        cleaned_syndicate_missions = []
+
+        for syndicate in raw_syndicate_missions:
+            syndicate_id = syndicate.get('id', '')
+            syndicate_key = syndicate.get('syndicateKey', '')
+            
+            # Keep only the target syndicates
+            if syndicate_key in target_syndicates or any(target in syndicate_id for target in target_syndicates):
+                
+                # Prune the bloated reward arrays from each job
+                if 'jobs' in syndicate:
+                    for job in syndicate['jobs']:
+                        job.pop('rewardPool', None)
+                        job.pop('rewardPoolDrops', None)
+                
+                cleaned_syndicate_missions.append(syndicate)
+
+        #End-Game Weekly Missions
+        sortie = world_state.get('sortie', {})
+        archon_hunt = world_state.get('archonHunt', {})
+
+        #Faction invasion events
+        #fomorion and razorback armada
+        construction_progress = world_state.get('constructionProgress', [])
+        #invasion battles
+        invasions = world_state.get('invasions', [])
 
         #logging.info(f"Found {len(alerts)} active alerts.")
         logging.info(f"Found {len(alerts)} active alerts and {len(fissures)} active fissures.")
@@ -71,12 +109,17 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
             doc_ref.set({
                 'alerts': alerts,
                 'fissures': fissures,
-                'arbitration': arbitration,
+                # 'arbitration': arbitration,
                 'voidTrader': void_trader,
                 'cetusCycle': cetus,
                 'vallisCycle': vallis,
                 'cambionCycle': cambion,
                 'duviriCycle': duviri,
+                'sortie': sortie,
+                'archonHunt': archon_hunt,
+                'constructionProgress': construction_progress,
+                'invasions': invasions,
+                'syndicateMissions': cleaned_syndicate_missions,
                 'last_updated': firestore.SERVER_TIMESTAMP
             })
             
