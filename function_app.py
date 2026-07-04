@@ -64,12 +64,14 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
         raw_syndicate_missions = world_state.get('syndicateMissions', [])
         target_syndicates = [
             "Ostrons", 
-            "SolarisUnited", 
+            "Vox Solaris", 
+            "Solaris United",
             "Duviri", 
-            "Hollvania", 
+            "The Hex", 
             "EntratiSyndicate", 
             "Cavia", 
-            "Zariman"
+            "Entrati",
+            "The Holdfasts"
         ]
         cleaned_syndicate_missions = []
 
