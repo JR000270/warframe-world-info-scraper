@@ -54,6 +54,9 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
         #baro ki'teer
         void_trader = world_state.get('voidTrader', {})
 
+        #darvo deal
+        darvo_deal = world_state.get('dailyDeals', {})
+
         #world cycles
         cetus = world_state.get('cetusCycle', {})
         vallis = world_state.get('vallisCycle', {})
@@ -108,6 +111,7 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
                 'fissures': fissures,
                 # 'arbitration': arbitration,
                 'voidTrader': void_trader,
+                'darvoDeal': darvo_deal,
                 'cetusCycle': cetus,
                 'vallisCycle': vallis,
                 'cambionCycle': cambion,
