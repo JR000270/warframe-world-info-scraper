@@ -8,7 +8,7 @@ from firebase_admin import credentials, firestore
 
 app = func.FunctionApp()
 
-# Initialize Firebase OUTSIDE the function.
+# Initialize Firebase
 # This ensures it only connects once when the server wakes up, saving memory and time.
 firebase_keys_string = os.environ.get("FIREBASE_CREDENTIALS")
 
@@ -30,8 +30,8 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
 
     logging.info('Warframe Scraper triggered.')
 
-   # 1. Fetch the data from the community API (Bypasses Cloudflare IP blocks)
-    # Note: Using '/pc to get all the data and sift it from there as needed
+   # Fetch the data from the community API (Bypasses Cloudflare IP blocks)
+    # Using '/pc to get all the data and sift it from there as needed
     url = "https://api.warframestat.us/pc"
 
     headers = {
@@ -42,11 +42,11 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
         response = requests.get(url, headers=headers, timeout=10) #send request with a timeout
         response.raise_for_status() # Check for HTTP errors
         
-        # 2. Parse the info into a json object
+        # Parse the info into a json object
         world_state = response.json()
         
-        # 3. Pluck out only the arrays we care about right now
-        # The .get() method is safe: if 'alerts' is missing, it returns an empty array []
+        #  take the arrays we care about right now
+        # The .get() method bc if 'alerts' is missing, it returns an empty array []
         alerts = world_state.get('alerts', []) #basically asking for info in using a key -> 'alerts'
         fissures = world_state.get('fissures', [])
         # arbitration = world_state.get('arbitration', {}) #gets junk data every time
@@ -80,15 +80,24 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
             # Keep only the target syndicates
             if syndicate_key in target_syndicates or any(target in syndicate_id for target in target_syndicates):
                 
-                # Prune the bloated reward arrays from each job
+                # remove the bloated reward arrays from each job
                 if 'jobs' in syndicate:
                     for job in syndicate['jobs']:
                         job.pop('rewardPool', None)
-                        job.pop('rewardPoolDrops', None)
+                
+                #sort the rewardPoolDrops in job array section by rarity, common, uncommon, rare, legendary
+                        if 'rewardPoolDrops' in job:
+                            rarity_order = {
+                                'common': 1,
+                                'uncommon': 2,
+                                'rare': 3,
+                                'legendary': 4
+                            }
+                            job['rewardPoolDrops'].sort(key=lambda x: rarity_order.get(x.get('rarity', '').lower(), 0))
                 
                 cleaned_syndicate_missions.append(syndicate)
 
-        #End-Game Weekly Missions
+        #End-Game Weekly Missions   
         sortie = world_state.get('sortie', {})
         archon_hunt = world_state.get('archonHunt', {})
 
@@ -101,7 +110,7 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
         #logging.info(f"Found {len(alerts)} active alerts.")
         logging.info(f"Found {len(alerts)} active alerts and {len(fissures)} active fissures.")
 
-        # 4. Write to Firestore
+        # Write to Firestore
         if firebase_admin._apps: 
             db = firestore.client()
             
@@ -109,7 +118,6 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
             doc_ref.set({
                 'alerts': alerts,
                 'fissures': fissures,
-                # 'arbitration': arbitration,
                 'voidTrader': void_trader,
                 'darvoDeal': darvo_deal,
                 'cetusCycle': cetus,
