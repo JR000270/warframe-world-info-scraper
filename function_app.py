@@ -47,6 +47,7 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
         
         #  take the arrays we care about right now
         # The .get() method bc if 'alerts' is missing, it returns an empty array []
+        events = world_state.get('events', [])
         alerts = world_state.get('alerts', []) #basically asking for info in using a key -> 'alerts'
         fissures = world_state.get('fissures', [])
         # arbitration = world_state.get('arbitration', {}) #gets junk data every time
@@ -116,6 +117,7 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
             
             doc_ref = db.collection('worldState').document('latest')
             doc_ref.set({
+                'events': events,
                 'alerts': alerts,
                 'fissures': fissures,
                 'voidTrader': void_trader,
