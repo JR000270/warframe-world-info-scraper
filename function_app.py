@@ -110,6 +110,7 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
 
         #logging.info(f"Found {len(alerts)} active alerts.")
         logging.info(f"Found {len(alerts)} active alerts and {len(fissures)} active fissures.")
+        logging.info(f"Found {len(events)} active events and {len(cleaned_syndicate_missions)} active syndicate missions.")
 
         # Write to Firestore
         if firebase_admin._apps: 
@@ -136,9 +137,9 @@ def warframe_scraper(myTimer: func.TimerRequest) -> None:
             
             logging.info("Successfully updated Firestore with latest Warframe alerts.")
         else:
-            logging.error("Cannot write to database. Firebase is not initialized.")
+            logging.error("Cannot write to database! Firebase is not initialized.")
 
     except requests.exceptions.RequestException as e:
-        logging.error(f"Failed to fetch data from Warframe: {e}")
+        logging.error(f"Failed to fetch data from Warframe! : {e}")
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
